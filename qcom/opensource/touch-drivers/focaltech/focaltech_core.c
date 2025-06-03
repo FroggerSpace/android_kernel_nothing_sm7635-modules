@@ -36,6 +36,7 @@
 #include <linux/of_gpio.h>
 #include <linux/of_irq.h>
 #include <linux/sysfs.h>
+#include <linux/version.h>
 
 #if IS_ENABLED(CONFIG_DRM)
 #if IS_ENABLED(CONFIG_DRM_PANEL)
