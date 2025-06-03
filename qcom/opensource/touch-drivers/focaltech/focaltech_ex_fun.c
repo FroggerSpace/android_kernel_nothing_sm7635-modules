@@ -1738,6 +1738,17 @@ static ssize_t fts_fod_store(
 
     return count;
 }
+
+static ssize_t fts_fod_pressed_show(struct device *dev,
+                                    struct device_attribute *attr, char *buf)
+{
+    struct fts_ts_data *ts_data = dev_get_drvdata(dev);
+
+    if (!ts_data)
+        return -ENODEV;
+
+    return scnprintf(buf, PAGE_SIZE, "%d\n", ts_data->fp_down_report ? 1 : 0);
+}
 #endif
 
 static int fts_proc_palm_to_sleep_support_open(struct inode* inode, struct file* file){
@@ -1783,6 +1794,7 @@ static DEVICE_ATTR(fts_touch_size, S_IRUGO | S_IWUSR, fts_touchsize_show, fts_to
 static DEVICE_ATTR(fts_ta_mode, S_IRUGO | S_IWUSR, fts_tamode_show, fts_tamode_store);
 #if FTS_FOD_EN
 static DEVICE_ATTR(fts_fod_mode, S_IRUGO | S_IWUSR, fts_fod_show, fts_fod_store);
+static DEVICE_ATTR_RO(fts_fod_pressed);
 #endif
 
 /* add your attr in here*/
@@ -1803,6 +1815,7 @@ static struct attribute *fts_attributes[] = {
     &dev_attr_fts_ta_mode.attr,
 #if FTS_FOD_EN
     &dev_attr_fts_fod_mode.attr,
+    &dev_attr_fts_fod_pressed.attr,
 #endif
     NULL
 };
