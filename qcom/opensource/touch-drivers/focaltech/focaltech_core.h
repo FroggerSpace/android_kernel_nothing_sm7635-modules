@@ -270,6 +270,8 @@ struct fts_ts_data {
     bool gesture_support;   /* gesture enable or disable, default: disable */
     u8 gesture_bmode;       /*gesture buffer mode*/
     bool palm_to_sleep_support;
+    bool single_tap_enabled;
+    bool single_tap_pressed;
 
     int fod_fp_down;
     int fp_down_report;
