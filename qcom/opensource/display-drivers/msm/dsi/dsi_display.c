@@ -8085,10 +8085,10 @@ int dsi_display_set_mode(struct dsi_display *display,
 		}
 	}
 
-	if (display->panel->lhbm_state && mode->timing.refresh_rate != 120) {
+/* 	if (display->panel->lhbm_state && mode->timing.refresh_rate != 120) {
 		fp_status = 0;
 		dsi_display_set_lhbm_state(display, 0);
-	}
+	} */
 
 	rc = dsi_display_validate_mode_set(display, &adj_mode, flags);
 	if (rc) {
