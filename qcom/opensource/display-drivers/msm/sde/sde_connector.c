@@ -1078,10 +1078,10 @@ static int _sde_connector_update_finger_hbm_status(
 	if (fp_status == display->panel->lhbm_state)
 		return 0;
 
-	if (fp_status && display->panel->cur_mode->timing.refresh_rate != 120) {
+/* 	if (fp_status && display->panel->cur_mode->timing.refresh_rate != 120) {
 		SDE_ERROR("fps not equal 120, wait!");
 		return 0;
-	}
+	} */
 
 	dsi_display_set_lhbm_state(display, fp_status);
 
