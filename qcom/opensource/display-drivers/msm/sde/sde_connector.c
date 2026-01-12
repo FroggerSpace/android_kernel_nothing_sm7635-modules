@@ -1262,8 +1262,11 @@ int sde_connector_prepare_commit(struct drm_connector *connector)
 			SDE_ERROR("update hbm status failed\n");
 		}
 		display = (struct dsi_display *) c_conn->display;
-		if (display && display->panel && !display->panel->update_init_gamma)
+		if (display && display->panel && (!display->panel->update_init_gamma ||
+			display->panel->needs_gamma_restore)) {
 			_sde_connector_update_fps_gamma(display);
+			display->panel->needs_gamma_restore = false;
+		}
 	}
 
 	if (!c_conn->ops.prepare_commit)
