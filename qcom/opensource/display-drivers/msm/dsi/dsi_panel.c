@@ -670,6 +670,7 @@ int dsi_panel_set_lhbm_state(struct dsi_panel *panel, unsigned long fp_status)
 			rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_LHBM_OFF);
 			SDE_ATRACE_END("DSI_CMD_SET_LHBM_OFF");
 			panel->lhbm_state = false;
+			panel->needs_gamma_restore = true;
 			update = true;
 			DSI_INFO("close local hbm");
 			if (rc)
