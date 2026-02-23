@@ -1078,10 +1078,10 @@ static int _sde_connector_update_finger_hbm_status(
 	if (fp_status == display->panel->lhbm_state)
 		return 0;
 
-/* 	if (fp_status && display->panel->cur_mode->timing.refresh_rate != 120) {
+	if (fp_status && display->panel->cur_mode->timing.refresh_rate != 120) {
 		SDE_ERROR("fps not equal 120, wait!");
 		return 0;
-	} */
+	} 
 
 	dsi_display_set_lhbm_state(display, fp_status);
 
@@ -1262,10 +1262,12 @@ int sde_connector_prepare_commit(struct drm_connector *connector)
 			SDE_ERROR("update hbm status failed\n");
 		}
 		display = (struct dsi_display *) c_conn->display;
-		if (display && display->panel && (!display->panel->update_init_gamma ||
-			display->panel->needs_gamma_restore)) {
-			_sde_connector_update_fps_gamma(display);
-			display->panel->needs_gamma_restore = false;
+		if (display->panel->lhbm_wait) {
+ 			display->panel->lhbm_wait = false;
+    		// skip gamma this commit, let it apply next time
+		} else if (!display->panel->update_init_gamma || display->panel->needs_gamma_restore) {
+    		_sde_connector_update_fps_gamma(display);
+    		display->panel->needs_gamma_restore = false;
 		}
 	}
 
