@@ -16,7 +16,7 @@
 #include "msm_vidc_fence.h"
 #include "msm_vidc_platform.h"
 
-#define is_in_range(range, val) (((range.begin) < (val)) && ((range.end) > (val)))
+#define hifi_in_range(range, val) (((range.begin) < (val)) && ((range.end) > (val)))
 
 extern struct msm_vidc_core *g_core;
 struct msm_vidc_core_hfi_range {
@@ -1899,7 +1899,7 @@ static int handle_system_response(struct msm_vidc_core *core,
 					goto exit;
 				goto exit;
 			}
-			if (is_in_range(be[i], packet->type)) {
+			if (hifi_in_range(be[i], packet->type)) {
 				rc = be[i].handle(core, packet);
 				if (rc)
 					goto exit;
@@ -1945,7 +1945,7 @@ static int __handle_session_response(struct msm_vidc_inst *inst,
 					__func__, packet->type);
 				handle_session_error(inst, packet);
 			}
-			if (is_in_range(be[i], packet->type)) {
+			if (hifi_in_range(be[i], packet->type)) {
 				dequeue |= (packet->type == HFI_CMD_BUFFER);
 				rc = be[i].handle(inst, packet);
 				if (rc)
