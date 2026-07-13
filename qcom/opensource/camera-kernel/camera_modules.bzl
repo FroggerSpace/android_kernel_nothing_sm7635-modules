@@ -16,7 +16,6 @@ def _define_module(target, variant, lunch_target=None):
 
     deps = [
         ":camera_headers",
-        ":camera_banner",
         "//msm-kernel:all_headers",
         "//vendor/qcom/opensource/securemsm-kernel:smcinvoke_kernel_headers",
         "//vendor/qcom/opensource/securemsm-kernel:smmu_proxy_headers",
@@ -260,7 +259,7 @@ def _define_module(target, variant, lunch_target=None):
             },
         },
 
-        copts = ["-Wno-implicit-fallthrough", "-include", "$(location :camera_banner)"],
+        copts = ["-Wno-implicit-fallthrough"],
 
         deps = deps,
         kconfig = "Kconfig",
