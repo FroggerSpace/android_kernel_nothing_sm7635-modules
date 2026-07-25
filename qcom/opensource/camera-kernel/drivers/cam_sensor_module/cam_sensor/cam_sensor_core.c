@@ -14,6 +14,8 @@
 #include "cam_packet_util.h"
 #include "cam_req_mgr_dev.h"
 
+#include "cam_sensor_nothing.h"
+
 #define CAM_SENSOR_PIPELINE_DELAY_MASK        0xFF
 #define CAM_SENSOR_MODESWITCH_DELAY_SHIFT     8
 
@@ -697,6 +699,14 @@ int32_t cam_sensor_update_slave_info(void *probe_info,
 		s_ctrl->sensor_probe_data_type =
 			sensor_probe_info_v2->data_type;
 
+		// add for extern i2c probe begin @{
+		s_ctrl->extern_slave_addr    = sensor_probe_info_v2->extern_slave_addr;
+		s_ctrl->extern_reg_addr      = sensor_probe_info_v2->extern_reg_addr;
+		s_ctrl->extern_expected_data = sensor_probe_info_v2->extern_expected_data;
+		s_ctrl->extern_data_type     = sensor_probe_info_v2->extern_data_type;
+		s_ctrl->extern_addr_type     = sensor_probe_info_v2->extern_addr_type;
+		// @}
+
 		memcpy(s_ctrl->sensor_name, sensor_probe_info_v2->sensor_name,
 			CAM_SENSOR_NAME_MAX_SIZE-1);
 	}
@@ -995,7 +1005,7 @@ void cam_sensor_shutdown(struct cam_sensor_ctrl_t *s_ctrl)
 int cam_sensor_match_id(struct cam_sensor_ctrl_t *s_ctrl)
 {
 	int rc = 0;
-	uint32_t chipid = 0;
+	uint32_t chipid = 0,temp_sid = 0;
 	struct cam_camera_slave_info *slave_info;
 
 	slave_info = &(s_ctrl->sensordata->slave_info);
@@ -1024,6 +1034,35 @@ int cam_sensor_match_id(struct cam_sensor_ctrl_t *s_ctrl)
 				slave_info->sensor_id);
 		return -ENODEV;
 	}
+
+	// add for extern i2c probe begin @{
+	if (0 != s_ctrl->extern_addr_type && 0 != s_ctrl->extern_data_type)
+	{
+		temp_sid = s_ctrl->io_master_info.cci_client->sid;
+		if (0 != s_ctrl->extern_slave_addr)
+		{
+			CAM_INFO(CAM_SENSOR, "extern slave addr 0x%x", s_ctrl->extern_slave_addr);
+			s_ctrl->io_master_info.cci_client->sid = s_ctrl->extern_slave_addr >> 1;
+		}
+		chipid = 0;
+		rc = camera_io_dev_read(
+			&(s_ctrl->io_master_info),
+			s_ctrl->extern_reg_addr,
+			&chipid, s_ctrl->extern_addr_type,
+			s_ctrl->extern_data_type, true);
+
+		s_ctrl->io_master_info.cci_client->sid = temp_sid;
+
+		if (chipid != s_ctrl->extern_expected_data)
+		{
+			CAM_WARN(CAM_SENSOR, "extern read addr 0x%x read id: 0x%x expected id 0x%x:",
+					s_ctrl->extern_reg_addr, chipid,
+					s_ctrl->extern_expected_data);
+			return -ENODEV;
+		}
+	}
+	// @}
+
 	return rc;
 }
 
@@ -1146,6 +1185,7 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 		/* Power up and probe sensor */
 		rc = cam_sensor_power_up(s_ctrl);
 		if (rc < 0) {
+			cam_nt_driver_errcode(s_ctrl->soc_info.index, NT_CAM_POWER_ERR);
 			CAM_ERR(CAM_SENSOR,
 				"Power up failed for %s sensor_id: 0x%x, slave_addr: 0x%x",
 				s_ctrl->sensor_name,
@@ -1175,6 +1215,8 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 		/* Match sensor ID */
 		rc = cam_sensor_match_id(s_ctrl);
 		if (rc < 0) {
+			cam_nt_sctrl_save(NULL, s_ctrl->soc_info.index);
+			cam_nt_driver_errcode(s_ctrl->soc_info.index, NT_CAM_PROBE_ERR);
 			CAM_INFO(CAM_SENSOR,
 				"Probe failed for %s slot:%d, slave_addr:0x%x, sensor_id:0x%x",
 				s_ctrl->sensor_name,
@@ -1215,6 +1257,9 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 		 */
 		s_ctrl->is_probe_succeed = 1;
 		s_ctrl->sensor_state = CAM_SENSOR_INIT;
+
+		cam_nt_driver_errcode(s_ctrl->soc_info.index, NT_CAM_PROBE_OK);
+		cam_nt_sctrl_save(s_ctrl, s_ctrl->soc_info.index);
 
 		CAM_INFO(CAM_SENSOR,
 				"Probe success for %s slot:%d,slave_addr:0x%x,sensor_id:0x%x",
@@ -1282,6 +1327,7 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 
 		rc = cam_sensor_power_up(s_ctrl);
 		if (rc < 0) {
+			cam_nt_driver_errcode(s_ctrl->soc_info.index, NT_CAM_POWER_ERR);
 			CAM_ERR(CAM_SENSOR,
 				"Sensor Power up failed for %s sensor_id:0x%x, slave_addr:0x%x",
 				s_ctrl->sensor_name,
@@ -1482,6 +1528,7 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 			s_ctrl->i2c_data.init_settings.request_id = -1;
 
 			if (rc < 0) {
+				cam_nt_driver_errcode(s_ctrl->soc_info.index, NT_CAM_INIT_ERR);
 				CAM_ERR(CAM_SENSOR,
 					"%s: cannot apply init settings rc= %d",
 					s_ctrl->sensor_name, rc);
@@ -1513,6 +1560,7 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 			s_ctrl->i2c_data.config_settings.request_id = -1;
 
 			if (rc < 0) {
+				cam_nt_driver_errcode(s_ctrl->soc_info.index, NT_CAM_INIT_ERR);
 				CAM_ERR(CAM_SENSOR,
 					"%s: cannot apply config settings",
 					s_ctrl->sensor_name);
@@ -1833,6 +1881,7 @@ int cam_sensor_apply_settings(struct cam_sensor_ctrl_t *s_ctrl,
 						&(s_ctrl->io_master_info),
 						i2c_list);
 				if (rc < 0) {
+					cam_nt_driver_errcode(s_ctrl->soc_info.index, NT_CAM_I2C_ERR);
 					CAM_ERR(CAM_SENSOR,
 						"Failed to apply settings: %d",
 						rc);
@@ -1866,6 +1915,7 @@ int cam_sensor_apply_settings(struct cam_sensor_ctrl_t *s_ctrl,
 						&(s_ctrl->io_master_info),
 						i2c_list);
 				if (rc < 0) {
+					cam_nt_driver_errcode(s_ctrl->soc_info.index, NT_CAM_I2C_ERR);
 					CAM_ERR(CAM_SENSOR,
 						"Failed to apply settings: %d",
 						rc);
@@ -1953,6 +2003,10 @@ int cam_sensor_apply_settings(struct cam_sensor_ctrl_t *s_ctrl,
 			}
 		}
 	}
+
+	/*xft begin*/
+	cam_nt_do_i2c_info(s_ctrl);
+	/*xft end*/
 
 	return rc;
 }
