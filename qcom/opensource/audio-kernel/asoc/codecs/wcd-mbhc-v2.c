@@ -1764,10 +1764,6 @@ static int wcd_mbhc_usbc_ana_event_handler(struct notifier_block *nb,
 			}
 		}
 #endif
-#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
-	mbhc->mbhc_cb->mbhc_micbias_reg_detect(mbhc->component);
-#endif
-	} else if (mode < TYPEC_MAX_ACCESSORY) {
 #if IS_ENABLED(CONFIG_QCOM_WCD_USBSS_I2C)
 		if (mbhc->wcd_usbss_aatc_dev_np) {
 			WCD_MBHC_REG_READ(WCD_MBHC_L_DET_EN, l_det_en);

@@ -155,11 +155,6 @@ struct wcd9378_priv {
 	struct dentry *debugfs_reg_dump;
 	unsigned int read_data;
 #endif
-#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
-	struct workqueue_struct *ssr_workqueue;
-	struct work_struct ssr_work;
-	unsigned long last_ssr_jiffies;
-#endif
 };
 
 struct wcd9378_micbias_setting {
