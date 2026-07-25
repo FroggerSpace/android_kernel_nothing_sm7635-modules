@@ -154,6 +154,13 @@ struct cam_sensor_ctrl_t {
 	bool                           stream_off_after_eof;
 	bool                           is_res_info_updated;
 	bool                           hw_no_ops;
+	// add for extern i2c probe begin @{
+	uint32_t    extern_slave_addr;
+	uint32_t    extern_reg_addr;
+	uint32_t    extern_expected_data;
+	uint8_t     extern_data_type;
+	uint8_t     extern_addr_type;
+	// @}
 };
 
 /**
