@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
- * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ * Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #ifndef _WCD9378_INTERNAL_H
@@ -11,9 +11,11 @@
 #include <asoc/wcd-irq.h>
 #include <asoc/wcd-clsh.h>
 #include <soc/soundwire.h>
-#include <asoc/sdca-registers-api.h>
 #include "wcd9378-mbhc.h"
 #include "wcd9378.h"
+#include <linux/kobject.h>
+#include <linux/workqueue.h>
+#include <linux/jiffies.h>
 
 #define SWR_SCP_CONTROL    0x44
 #define SWR_SCP_HOST_CLK_DIV2_CTL_BANK 0xE0
@@ -97,8 +99,6 @@ struct wcd9378_priv {
 	struct wcd_clsh_cdc_info clsh_info;
 	/* mbhc module */
 	struct wcd9378_mbhc *mbhc;
-	struct sdca_debugfs_info *debugfs_info;
-	struct sdca_regdump_info *regdump_info;
 
 	u32 hph_mode;
 	u16 hph_gain;
@@ -145,7 +145,21 @@ struct wcd9378_priv {
 	bool usbc_hs_status;
 	/* wcd to swr dmic notification */
 	bool notify_swr_dmic;
+	u8 rx_swrclk;
+	u8 rx_clkscale;
+	u8 tx_swrclk;
+	u8 tx_clkscale;
 	struct blocking_notifier_head notifier;
+#ifdef CONFIG_DEBUG_FS
+	struct dentry *debugfs_wcd9378_dent;
+	struct dentry *debugfs_reg_dump;
+	unsigned int read_data;
+#endif
+#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
+	struct workqueue_struct *ssr_workqueue;
+	struct work_struct ssr_work;
+	unsigned long last_ssr_jiffies;
+#endif
 };
 
 struct wcd9378_micbias_setting {

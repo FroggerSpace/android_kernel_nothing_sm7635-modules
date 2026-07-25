@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2015-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 #include <linux/module.h>
 #include <linux/init.h>
@@ -1034,7 +1034,11 @@ static void wcd_mbhc_swch_irq_handler(struct wcd_mbhc *mbhc)
 
 	if ((mbhc->current_plug == MBHC_PLUG_TYPE_NONE) &&
 	    detection_type) {
-
+		if (is_fsa4480_odm_method()) {
+			pr_info("%s: mbhc detect plug in, before sleep 100ms\n", __func__);
+			msleep(100);
+			pr_info("%s: mbhc detect plug in, after sleep 100ms\n", __func__);
+		}
 		wcd_mbhc_set_hsj_connect(mbhc, 1);
 		/* If moisture is present, then enable polling, disable
 		 * moisture detection and wait for interrupt
@@ -1071,11 +1075,6 @@ static void wcd_mbhc_swch_irq_handler(struct wcd_mbhc *mbhc)
 			mbhc->mbhc_fn->wcd_mbhc_detect_plug_type(mbhc);
 	} else if ((mbhc->current_plug != MBHC_PLUG_TYPE_NONE)
 			&& !detection_type) {
-		/*Disable micbias2 before disable L_DET*/
-		if (mbhc->mbhc_cb->mbhc_force_micbias_disable)
-			mbhc->mbhc_cb->mbhc_force_micbias_disable(
-					component, MIC_BIAS_2);
-
 		/* Disable external voltage source to micbias if present */
 		if (mbhc->mbhc_cb->enable_mb_source)
 			mbhc->mbhc_cb->enable_mb_source(mbhc, false);
@@ -1141,6 +1140,13 @@ static void wcd_mbhc_swch_irq_handler(struct wcd_mbhc *mbhc)
 		extcon_set_state_sync(mbhc->extdev, extdev_type, 0);
 
 		if (mbhc->mbhc_cfg->enable_usbc_analog) {
+			if (is_fsa4480_odm_method()) {
+				odm_wcd_sleep_before();
+				pr_info("%s: plug out, before sleep 900ms\n", __func__);
+				msleep(900);
+				pr_info("%s: plug out, after sleep 900ms\n", __func__);
+				odm_wcd_sleep_after();
+			}
 			WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_L_DET_EN, 0);
 			if (mbhc->mbhc_cb->clk_setup)
 				mbhc->mbhc_cb->clk_setup(
@@ -1757,6 +1763,9 @@ static int wcd_mbhc_usbc_ana_event_handler(struct notifier_block *nb,
 				mbhc->mbhc_cb->lock_sleep(mbhc, false);
 			}
 		}
+#endif
+#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
+	mbhc->mbhc_cb->mbhc_micbias_reg_detect(mbhc->component);
 #endif
 	} else if (mode < TYPEC_MAX_ACCESSORY) {
 #if IS_ENABLED(CONFIG_QCOM_WCD_USBSS_I2C)
