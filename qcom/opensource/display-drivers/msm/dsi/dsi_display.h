@@ -308,6 +308,11 @@ struct dsi_display {
 	struct dsi_panel_cmd_set cmd_set;
 
 	bool enabled;
+
+	struct wakeup_source *wk_lock;
+	bool dsi_stay_awake;
+	bool send_fps_cmd_pending;
+	u32 wait_timeout_us;
 };
 
 int dsi_display_dev_probe(struct platform_device *pdev);
@@ -860,5 +865,7 @@ int dsi_display_get_panel_scan_line(void *display, u16 *scan_line, ktime_t *scan
  *
  */
 void dsi_display_report_dead(struct dsi_display *display);
+
+int dsi_display_set_lhbm_state(struct dsi_display *display, unsigned long fp_status);
 
 #endif /* _DSI_DISPLAY_H_ */
