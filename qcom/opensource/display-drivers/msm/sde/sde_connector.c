@@ -1333,10 +1333,6 @@ void sde_connector_helper_bridge_post_disable(struct drm_connector *connector)
 }
 
 
-#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
-extern unsigned long fp_status;
-#endif
-
 void sde_connector_helper_bridge_enable(struct drm_connector *connector)
 {
 	struct sde_connector *c_conn = NULL;
@@ -1367,13 +1363,7 @@ void sde_connector_helper_bridge_enable(struct drm_connector *connector)
 	if (!sde_in_trusted_vm(sde_kms) && c_conn->bl_device && !display->poms_pending) {
 		c_conn->bl_device->props.power = FB_BLANK_UNBLANK;
 		c_conn->bl_device->props.state &= ~BL_CORE_FBBLANK;
-#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
-		if(!fp_status){
-			backlight_update_status(c_conn->bl_device);
-		}
-#else
 		backlight_update_status(c_conn->bl_device);
-#endif
 	}
 }
 
