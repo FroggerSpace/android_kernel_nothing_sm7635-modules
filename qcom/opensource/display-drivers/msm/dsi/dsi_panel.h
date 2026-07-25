@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ * Copyright (c) 2022-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  * Copyright (c) 2016-2021, The Linux Foundation. All rights reserved.
  */
 
@@ -12,7 +12,6 @@
 #include <linux/bitops.h>
 #include <linux/errno.h>
 #include <linux/backlight.h>
-#include <linux/i2c.h>
 #include <drm/drm_panel.h>
 #include <drm/msm_drm.h>
 #include <drm/msm_drm_pp.h>
@@ -25,6 +24,7 @@
 #include "msm_drv.h"
 
 #define MAX_BL_LEVEL 4096
+
 #define MAX_BL_SCALE_LEVEL 1024
 #define MAX_SV_BL_SCALE_LEVEL 65535
 #define SV_BL_SCALE_CAP (MAX_SV_BL_SCALE_LEVEL * 4)
@@ -90,6 +90,12 @@ struct dsi_dfps_capabilities {
 	u32 *dfps_list;
 	u32 dfps_list_len;
 	bool dfps_support;
+	u32 *dfps_hfp_list;
+	u32 *dfps_hbp_list;
+	u32 *dfps_hpw_list;
+	u32 *dfps_vbp_list;
+	u32 *dfps_vfp_list;
+	u32 *dfps_vpw_list;
 };
 
 struct dsi_qsync_capabilities {
@@ -199,25 +205,6 @@ struct dsi_panel_spr_info {
 	enum msm_display_spr_pack_type pack_type;
 };
 
-struct dsi_panel_i2c_cmd {
-	const u8 *data;
-	u32 len;
-	u32 post_wait_ms;
-	u8 slave_addr;
-};
-
-struct dsi_panel_i2c_cmd_set {
-	struct dsi_panel_i2c_cmd *cmds;
-	u32 count;
-};
-
-struct dsi_panel_i2c_config {
-	bool i2c_support;
-	struct i2c_adapter *left_adapter;
-	struct i2c_adapter *right_adapter;
-	struct dsi_panel_i2c_cmd_set cmd_set;
-};
-
 struct dsi_panel;
 
 struct dsi_panel_ops {
@@ -301,8 +288,15 @@ struct dsi_panel {
 	enum dsi_panel_physical_type panel_type;
 
 	struct dsi_panel_ops panel_ops;
+
 	struct dsi_panel_calib_data calib_data;
-	struct dsi_panel_i2c_config i2c_config;
+
+	bool doze_recoverying;
+	int last_refresh_rate;
+	bool lhbm_state;
+	bool update_init_gamma;
+	int panel_version;
+	int panel_batch_id;
 };
 
 static inline bool dsi_panel_ulps_feature_enabled(struct dsi_panel *panel)
@@ -439,4 +433,8 @@ int dsi_panel_create_cmd_packets(const char *data, u32 length, u32 count,
 void dsi_panel_destroy_cmd_packets(struct dsi_panel_cmd_set *set);
 
 void dsi_panel_dealloc_cmd_packets(struct dsi_panel_cmd_set *set);
+
+int dsi_panel_set_lhbm_state(struct dsi_panel *panel, unsigned long fp_status);
+
+int send_refreshrate_cmd(struct dsi_panel *panel, int refreshrate);
 #endif /* _DSI_PANEL_H_ */
