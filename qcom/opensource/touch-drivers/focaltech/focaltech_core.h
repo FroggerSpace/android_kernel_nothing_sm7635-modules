@@ -310,9 +310,6 @@ struct fts_ts_data {
 #endif
     struct notifier_block fb_notif;
 	void *notifier_cookie;
-#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
-    char vendor_name[FILE_NAME_LENGTH ];
-#endif
 };
 
 enum _FTS_BUS_TYPE {
@@ -411,11 +408,6 @@ bool fts_esdcheck_is_running(struct fts_ts_data *ts_data);
 
 
 /* Host test */
-#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
-int fts_test_init(struct fts_ts_data *ts_data);
-int fts_test_exit(struct fts_ts_data *ts_data);
-#endif
-
 /* Point Report Check*/
 int fts_point_report_check_init(struct fts_ts_data *ts_data);
 int fts_point_report_check_exit(struct fts_ts_data *ts_data);

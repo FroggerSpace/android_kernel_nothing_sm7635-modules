@@ -624,19 +624,9 @@ int fts_fod_readdata(struct fts_ts_data *ts_data)
 
 static int fts_fod_recovery(struct fts_ts_data *ts_data)
 {
-#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
-    FTS_FUNC_ENTER();
-    if ((ts_data->fod_mode == FTS_FOD_DISABLE) || (ts_data->fod_mode == 3)) {
-        fts_fod_set_reg(DISABLE);
-    } else {
-        fts_fod_set_reg(FTS_VAL_FOD_ENABLE);
-    }
-    FTS_FUNC_EXIT();
-#else
     if (ts_data->fod_mode) {
         fts_fod_set_reg(FTS_VAL_FOD_ENABLE);
     }
-#endif
     return 0;
 }
 
@@ -2517,13 +2507,6 @@ int fts_ts_probe_entry(struct fts_ts_data *ts_data)
     }
 #endif
 
-#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
-    ret = fts_test_init(ts_data);
-    if (ret) {
-        FTS_ERROR("init host test fail");
-    }
-#endif
-
     ret = fts_esdcheck_init(ts_data);
     if (ret) {
         FTS_ERROR("init esd check fail");
@@ -2557,9 +2540,6 @@ int fts_ts_probe_entry(struct fts_ts_data *ts_data)
 
 err_irq_req:
     fts_esdcheck_exit(ts_data);
-#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
-    fts_test_exit(ts_data);
-#endif
 #if FTS_PSENSOR_EN
     fts_proximity_exit(ts_data);
 #endif
@@ -2618,9 +2598,6 @@ int fts_ts_remove_entry(struct fts_ts_data *ts_data)
     free_irq(ts_data->irq, ts_data);
     fts_fwupg_exit(ts_data);
     fts_esdcheck_exit(ts_data);
-#if IS_ENABLED(CONFIG_NOTHING_IS_FROGGER)
-    fts_test_exit(ts_data);
-#endif
 #if FTS_PSENSOR_EN
     fts_proximity_exit(ts_data);
 #endif
