@@ -283,19 +283,17 @@ SND_SOC_DAILINK_DEFS(pri_mi2s_tx,
 	DAILINK_COMP_ARRAY(COMP_CODEC("msm-stub-codec.1", "msm-stub-tx")),
 	DAILINK_COMP_ARRAY(COMP_PLATFORM("snd-soc-dummy")));
 #else
-#if IS_ENABLED(CONFIG_NOTHING_IS_ASTEROIDS)
 SND_SOC_DAILINK_DEFS(pri_mi2s_rx,
 	DAILINK_COMP_ARRAY(COMP_CPU("snd-soc-dummy-dai")),
-	DAILINK_COMP_ARRAY(COMP_CODEC("tfa98xx.13-0034", "tfa98xx-aif-d-34"),
-                           COMP_CODEC("tfa98xx.13-0035", "tfa98xx-aif-d-35")),
+	DAILINK_COMP_ARRAY(COMP_CODEC("aw882xx_smartpa.13-0034", "aw882xx-aif-13-34"),
+                           COMP_CODEC("aw882xx_smartpa.13-0035", "aw882xx-aif-13-35")),
 	DAILINK_COMP_ARRAY(COMP_PLATFORM("snd-soc-dummy")));
 
 SND_SOC_DAILINK_DEFS(pri_mi2s_tx,
 	DAILINK_COMP_ARRAY(COMP_CPU("snd-soc-dummy-dai")),
-	DAILINK_COMP_ARRAY(COMP_CODEC("tfa98xx.13-0034", "tfa98xx-aif-d-34"),
-                           COMP_CODEC("tfa98xx.13-0035", "tfa98xx-aif-d-35")),
+	DAILINK_COMP_ARRAY(COMP_CODEC("aw882xx_smartpa.13-0034", "aw882xx-aif-13-34"),
+                           COMP_CODEC("aw882xx_smartpa.13-0035", "aw882xx-aif-13-35")),
 	DAILINK_COMP_ARRAY(COMP_PLATFORM("snd-soc-dummy")));
-#endif
 #endif
 SND_SOC_DAILINK_DEFS(sec_mi2s_rx,
 	DAILINK_COMP_ARRAY(COMP_CPU("snd-soc-dummy-dai")),
