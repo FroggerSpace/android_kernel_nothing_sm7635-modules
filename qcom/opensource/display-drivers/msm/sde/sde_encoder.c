@@ -6330,6 +6330,9 @@ struct drm_encoder *sde_encoder_init(struct drm_device *dev, struct msm_display_
 
 	memcpy(&sde_enc->disp_info, disp_info, sizeof(*disp_info));
 
+	init_waitqueue_head(&sde_enc->wait_queue);
+	atomic_set(&sde_enc->vid_wait_vsync_cnt, 0);
+
 	SDE_DEBUG_ENC(sde_enc, "created\n");
 
 	return drm_enc;

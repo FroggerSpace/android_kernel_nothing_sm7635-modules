@@ -297,6 +297,9 @@ struct sde_encoder_virt {
 	bool ctl_done_supported;
 
 	unsigned long dynamic_irqs_config;
+
+	atomic_t vid_wait_vsync_cnt;
+	wait_queue_head_t wait_queue;
 };
 
 #define to_sde_encoder_virt(x) container_of(x, struct sde_encoder_virt, base)
@@ -488,7 +491,6 @@ bool sde_encoder_is_dsc_merge(struct drm_encoder *drm_enc);
 bool sde_encoder_check_curr_mode(struct drm_encoder *drm_enc, u32 mode);
 
 uint32_t sde_encoder_get_clones(struct drm_encoder *drm_enc);
-
 /**
  * sde_encoder_init - initialize virtual encoder object
  * @dev:        Pointer to drm device structure
