@@ -21,6 +21,10 @@
 
 extern struct completion *cam_sensor_get_i3c_completion(uint32_t index);
 
+/*xft begin*/
+extern int cam_nt_do_i2c_info(struct cam_sensor_ctrl_t *sctrl);
+/*xft end*/
+
 static int cam_sensor_notify_v4l2_error_event(
 	struct cam_sensor_ctrl_t *s_ctrl,
 	uint32_t error_type, uint32_t error_code)
@@ -699,14 +703,6 @@ int32_t cam_sensor_update_slave_info(void *probe_info,
 		s_ctrl->sensor_probe_data_type =
 			sensor_probe_info_v2->data_type;
 
-		// add for extern i2c probe begin @{
-		s_ctrl->extern_slave_addr    = sensor_probe_info_v2->extern_slave_addr;
-		s_ctrl->extern_reg_addr      = sensor_probe_info_v2->extern_reg_addr;
-		s_ctrl->extern_expected_data = sensor_probe_info_v2->extern_expected_data;
-		s_ctrl->extern_data_type     = sensor_probe_info_v2->extern_data_type;
-		s_ctrl->extern_addr_type     = sensor_probe_info_v2->extern_addr_type;
-		// @}
-
 		memcpy(s_ctrl->sensor_name, sensor_probe_info_v2->sensor_name,
 			CAM_SENSOR_NAME_MAX_SIZE-1);
 	}
@@ -1005,7 +1001,7 @@ void cam_sensor_shutdown(struct cam_sensor_ctrl_t *s_ctrl)
 int cam_sensor_match_id(struct cam_sensor_ctrl_t *s_ctrl)
 {
 	int rc = 0;
-	uint32_t chipid = 0,temp_sid = 0;
+	uint32_t chipid = 0;
 	struct cam_camera_slave_info *slave_info;
 
 	slave_info = &(s_ctrl->sensordata->slave_info);
@@ -1034,35 +1030,6 @@ int cam_sensor_match_id(struct cam_sensor_ctrl_t *s_ctrl)
 				slave_info->sensor_id);
 		return -ENODEV;
 	}
-
-	// add for extern i2c probe begin @{
-	if (0 != s_ctrl->extern_addr_type && 0 != s_ctrl->extern_data_type)
-	{
-		temp_sid = s_ctrl->io_master_info.cci_client->sid;
-		if (0 != s_ctrl->extern_slave_addr)
-		{
-			CAM_INFO(CAM_SENSOR, "extern slave addr 0x%x", s_ctrl->extern_slave_addr);
-			s_ctrl->io_master_info.cci_client->sid = s_ctrl->extern_slave_addr >> 1;
-		}
-		chipid = 0;
-		rc = camera_io_dev_read(
-			&(s_ctrl->io_master_info),
-			s_ctrl->extern_reg_addr,
-			&chipid, s_ctrl->extern_addr_type,
-			s_ctrl->extern_data_type, true);
-
-		s_ctrl->io_master_info.cci_client->sid = temp_sid;
-
-		if (chipid != s_ctrl->extern_expected_data)
-		{
-			CAM_WARN(CAM_SENSOR, "extern read addr 0x%x read id: 0x%x expected id 0x%x:",
-					s_ctrl->extern_reg_addr, chipid,
-					s_ctrl->extern_expected_data);
-			return -ENODEV;
-		}
-	}
-	// @}
-
 	return rc;
 }
 
