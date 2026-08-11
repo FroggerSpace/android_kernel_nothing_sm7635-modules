@@ -10,6 +10,14 @@
 #include <linux/types.h>
 #include "hfi_property.h"
 
+#ifndef MIN
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#endif
+
+#ifndef MAX
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#endif
+
 typedef u8      HFI_U8;
 typedef s8      HFI_S8;
 typedef u16     HFI_U16;
