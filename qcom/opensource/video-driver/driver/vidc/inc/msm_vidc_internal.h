@@ -24,6 +24,11 @@
 
 struct msm_vidc_inst;
 
+static inline bool is_in_range(u32 value, u32 min, u32 max)
+{
+	return (value >= min && value <= max);
+}
+
 /* start of vidc specific colorspace definitions */
 /*
  * V4L2_COLORSPACE_VIDC_START, V4L2_XFER_FUNC_VIDC_START
